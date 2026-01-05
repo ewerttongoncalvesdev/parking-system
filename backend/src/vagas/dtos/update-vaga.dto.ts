@@ -1,6 +1,6 @@
 import { IsEnum, IsOptional, IsString } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
-import { StatusVagas, TipoVaga } from '../entities/vagas.entity';
+import { StatusVaga, TipoVaga } from '../entities/vagas.entity';
 
 
 export class UpdateVagaDto {
@@ -9,10 +9,10 @@ export class UpdateVagaDto {
     @IsOptional()
     numero?: string;
 
-    @ApiProperty({ enum: StatusVagas, required: false })
-    @IsEnum(StatusVagas)
+    @ApiProperty({ enum: StatusVaga, required: false })
+    @IsEnum(StatusVaga)
     @IsOptional()
-    status?: StatusVagas;
+    status?: StatusVaga;
 
     @ApiProperty({ enum: TipoVaga, required: false })
     @IsEnum(TipoVaga)

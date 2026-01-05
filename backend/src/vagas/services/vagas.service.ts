@@ -1,41 +1,103 @@
-import { Injectable, NotFoundException, BadRequestException, ConflictException, Inject, forwardRef } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { StatusVaga, Vaga } from '../entities/vagas.entity';
+import { Vaga, StatusVaga, TipoVaga } from '../entities/vagas.entity';
+import { CreateVagaDto } from '../dtos/create-vaga.dto';
+import { UpdateVagaDto } from '../dtos/update-vaga.dto';
+import { Movimentacao } from '../../movimentacoes/entities/movimentacoes.entity';
 
 @Injectable()
 export class VagasService {
     constructor(
         @InjectRepository(Vaga)
-        private vagasRepository: Repository<Vaga>,
-        @Inject(forwardRef(() => 'MovimentacoesService'))
-        private movimentacoesService: any,
+        private readonly vagaRepository: Repository<Vaga>,
+
+        @InjectRepository(Movimentacao)
+        private readonly movimentacaoRepository: Repository<Movimentacao>,
     ) { }
 
+    // Criar vaga
+    async create(createVagaDto: CreateVagaDto): Promise<Vaga> {
+        const vaga = this.vagaRepository.create(createVagaDto);
+        return this.vagaRepository.save(vaga);
+    }
+
+    // Listar vagas com filtros
+    async findAll(
+        status?: StatusVaga,
+        tipo?: TipoVaga,
+    ): Promise<Vaga[]> {
+        const query = this.vagaRepository.createQueryBuilder('vaga');
+
+        if (status) {
+            query.andWhere('vaga.status = :status', { status });
+        }
+
+        if (tipo) {
+            query.andWhere('vaga.tipo = :tipo', { tipo });
+        }
+
+        return query.getMany();
+    }
+
+    // Buscar vaga por ID
+    async findOne(id: string): Promise<Vaga> {
+        const vaga = await this.vagaRepository.findOne({ where: { id } });
+
+        if (!vaga) {
+            throw new NotFoundException('Vaga não encontrada');
+        }
+
+        return vaga;
+    }
+
+    // Atualizar vaga
+    async update(
+        id: string,
+        updateVagaDto: UpdateVagaDto,
+    ): Promise<Vaga> {
+        const vaga = await this.findOne(id);
+
+        Object.assign(vaga, updateVagaDto);
+        return this.vagaRepository.save(vaga);
+    }
+
+    // Remover vaga
+    async remove(id: string): Promise<void> {
+        const vaga = await this.findOne(id);
+        await this.vagaRepository.remove(vaga);
+    }
+
+    // Estatísticas para o Dashboard
     async getEstatisticas() {
-        const total = await this.vagasRepository.count();
-        const ocupadas = await this.vagasRepository.count({
-            where: { status: StatusVaga.OCUPADA },
-        });
-        const livres = await this.vagasRepository.count({
+        // 1. Contagens de Vagas
+        const total = await this.vagaRepository.count();
+
+        const livres = await this.vagaRepository.count({
             where: { status: StatusVaga.LIVRE },
         });
-        const manutencao = await this.vagasRepository.count({
-            where: { status: StatusVaga.MANUTENCAO },
+
+        const ocupadas = await this.vagaRepository.count({
+            where: { status: StatusVaga.OCUPADA },
         });
 
-        const percentualOcupacao = total > 0 ? (ocupadas / total) * 100 : 0;
+        // 2. Cálculo da Receita Total (Soma de todas as movimentações sem filtro de data)
+        const todasMovimentacoes = await this.movimentacaoRepository.find();
+        
+        // Somamos o campo valor_pago (ou valorPago) de todas as movimentações
+        const receita_dia = todasMovimentacoes.reduce((acumulado, mov) => {
+            return acumulado + Number(mov.valor_pago || 0);
+        }, 0);
 
-        // Buscar receita do dia
-        const receitaDia = await this.movimentacoesService.getReceitaDia();
+        // 3. Cálculo de percentual para a barra de progresso
+        const percentual_ocupacao = total > 0 ? (ocupadas / total) * 100 : 0;
 
         return {
             total,
-            ocupadas,
             livres,
-            manutencao,
-            percentual_ocupacao: Math.round(percentualOcupacao * 100) / 100,
-            receita_dia: receitaDia,
+            ocupadas,
+            receita_dia, // Nome esperado pelo seu frontend para o card de dinheiro
+            percentual_ocupacao,
         };
     }
 }

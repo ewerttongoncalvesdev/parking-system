@@ -2,7 +2,7 @@ import {Controller, Get, Post, Body, Param, Delete, Put, Query} from '@nestjs/co
 import { ApiTags, ApiOperation, ApiQuery } from '@nestjs/swagger';
 import { VagasService } from '../services/vagas.service';
 import { CreateVagaDto } from '../dtos/create-vaga.dto';
-import { StatusVagas, TipoVaga } from '../entities/vagas.entity';
+import { StatusVaga, TipoVaga } from '../entities/vagas.entity';
 import { UpdateVagaDto } from '../dtos/update-vaga.dto';
 
 
@@ -19,10 +19,10 @@ export class VagasController {
 
     @Get()
     @ApiOperation({ summary: 'Listar vagas com filtros' })
-    @ApiQuery({ name: 'status', enum: StatusVagas, required: false })
+    @ApiQuery({ name: 'status', enum: StatusVaga, required: false })
     @ApiQuery({ name: 'tipo', enum: TipoVaga, required: false })
     findAll(
-        @Query('status') status?: StatusVagas,
+        @Query('status') status?: StatusVaga,
         @Query('tipo') tipo?: TipoVaga,
     ) {
         return this.vagasService.findAll(status, tipo);
