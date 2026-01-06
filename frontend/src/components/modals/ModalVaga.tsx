@@ -64,18 +64,17 @@ const ModalVaga: React.FC<ModalVagaProps> = ({
 
         try {
             if (vaga) {
-                // Ao ATUALIZAR, o status geralmente é permitido
+               
                 await vagasAPI.atualizar(vaga.id, formData);
             } else {
-                // Ao CRIAR, o NestJS rejeita o campo 'status' (Error 400)
-                // Usamos desestruturação para remover o status do envio
+               
                 const { status, ...dadosParaCriar } = formData;
 
                 await vagasAPI.criar(dadosParaCriar);
             }
             onSuccess();
         } catch (err: any) {
-            // Captura a mensagem específica do NestJS ou usa uma padrão
+           
             setError(
                 err?.response?.data?.message ||
                 'Erro ao salvar vaga. Verifique os dados.',

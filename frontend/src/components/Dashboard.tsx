@@ -37,15 +37,15 @@ const Dashboard: React.FC = () => {
 
     const carregarDados = async (): Promise<void> => {
         try {
-            // Promise.all executa as duas chamadas ao mesmo tempo
+            
             const [vagasRes, estatRes] = await Promise.all([
                 vagasAPI.listar(),
                 vagasAPI.estatisticas(),
             ]);
             
-            // Garante que se a resposta vier vazia, usamos um array vazio
+            
             setVagas(vagasRes.data || []);
-            // Garante que se estatísticas vierem nulas, mantemos o estado inicial
+         
             setEstatisticas(estatRes.data || {
                 total: 0, ocupadas: 0, livres: 0, manutencao: 0,
                 percentual_ocupacao: 0, receita_dia: 0
@@ -117,7 +117,7 @@ const Dashboard: React.FC = () => {
                 />
             </div>
 
-            {/* Taxa de Ocupação */}
+            Taxa de Ocupação
             <div className="bg-white p-6 rounded-lg shadow-md">
                 <h3 className="text-lg font-bold text-gray-800 mb-3">Taxa de Ocupação</h3>
                 <div className="w-full bg-gray-200 rounded-full h-6 overflow-hidden">
@@ -140,9 +140,10 @@ const Dashboard: React.FC = () => {
                             value={filtroStatus}
                             onChange={(e) => setFiltroStatus(e.target.value)}
                         >
-                            <option value="">Status</option>
+                            <option value="">Total</option>
                             <option value="livre">Livre</option>
                             <option value="ocupada">Ocupada</option>
+                            <option value="manutencao">Manutenção</option>
                         </select>
                     </div>
                 </div>

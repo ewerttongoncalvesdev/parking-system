@@ -50,16 +50,23 @@ const Gestao: React.FC = () => {
         }
     };
 
-    const handleExcluir = async (id: number): Promise<void> => {
-        if (!window.confirm('Deseja realmente excluir esta vaga?')) return;
+    const handleExcluir = async (vaga: Vaga): Promise<void> => {
+        // Bloqueia a exclusão se o status for 'ocupada' OU 'manutencao'
+        if (vaga.status === 'ocupada' || vaga.status === 'manutencao') {
+            const statusTexto = vaga.status === 'ocupada' ? 'ocupada' : 'em manutenção';
+            alert(`Não é possível excluir uma vaga ${statusTexto}. Altere o status para "Livre" antes de excluir.`);
+            return;
+        }
+
+        if (!window.confirm(`Deseja realmente excluir a vaga ${vaga.numero}?`)) return;
 
         try {
-            await vagasAPI.excluir(id);
+            await vagasAPI.excluir(vaga.id);
             carregarDados();
         } catch (error: any) {
             alert(
                 error.response?.data?.message ||
-                'Erro ao excluir vaga. Verifique se não está ocupada.',
+                'Erro ao excluir vaga. Verifique a conexão com o servidor.'
             );
         }
     };

@@ -84,7 +84,7 @@ export class VagasService {
         // 2. Cálculo da Receita Total (Soma de todas as movimentações sem filtro de data)
         const todasMovimentacoes = await this.movimentacaoRepository.find();
         
-        // Somamos o campo valor_pago (ou valorPago) de todas as movimentações
+        
         const receita_dia = todasMovimentacoes.reduce((acumulado, mov) => {
             return acumulado + Number(mov.valor_pago || 0);
         }, 0);
@@ -96,7 +96,7 @@ export class VagasService {
             total,
             livres,
             ocupadas,
-            receita_dia, // Nome esperado pelo seu frontend para o card de dinheiro
+            receita_dia, 
             percentual_ocupacao,
         };
     }
